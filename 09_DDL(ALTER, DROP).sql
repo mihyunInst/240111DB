@@ -244,24 +244,26 @@ SELECT * FROM TB2;
 --> ALTER, DROP 을 신중하게 진행해야함.
 
 -- 2) DDL과 DML 구문 섞어서 수행하면 안된다!
+--> DDL은 수행 시 존재하고 있는 트랜잭션을 모두 DB에 강제 COMMIT 시킴
+--> DDL이 종료된 후 DML 구문을 수행할 수 있도록 권장!
 
 
+SELECT * FROM TB2;
+
+COMMIT;
+
+-- DML
+INSERT INTO TB2 VALUES(14, 4);
+INSERT INTO TB2 VALUES(15, 5);
+SELECT * FROM TB2;
 
 
+-- 컬럼명 변경 DDL
+ALTER TABLE TB2 RENAME COLUMN TB2_COL TO TB2_COLCOL;
 
 
-
-
-
-
-
-
-
-
-
-
-
-
+ROLLBACK;
+SELECT * FROM TB2;
 
 
 
