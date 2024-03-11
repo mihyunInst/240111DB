@@ -1,0 +1,113 @@
+/* 연습문제 */
+/* 계정 'exam_이니셜' 로 생성 후 해당 계정에서 진행.
+ * 
+ * 테이블명 : MAJOR
+ * 1. MAJOR_NO (학과번호) : NUMBER - PK
+ * 2. MAJOR_NM (학과명) : VARCHAR2(100) - NOT NULL
+
+테이블명 : STUDENT
+1. STUDENT_ID (학번) : NUMBER - PK
+2. STUDENT_NAME (이름) : VARCHAR2(20) - NOT NULL
+3. GENDER (성별) : VARCHAR2(3) CHECK ('남' , '여')
+4. BIRTH (생년월일 : 'YYYY-MM-DD '형식으로 작성) : DATE
+5. MAJOR_NO (전공학과번호) : NUMBER - FK (부모키 삭제 시 자식키 NULL 로 변경)
+*/
+
+-- 11G 버전 이전의 문법을 사용 가능하도록 함
+ALTER SESSION SET "_ORACLE_SCRIPT" = TRUE;
+-- CTRL + ENTER : 선택한 SQL 수행
+
+
+-- 사용자 계정 생성
+CREATE USER exam_cmh IDENTIFIED BY exam1234;
+
+
+-- 사용자 계정에 권한 부여
+GRANT RESOURCE, CONNECT TO exam_cmh;
+
+-- 객체가 생성될 수 있는 공간 할당량 지정
+ALTER USER exam_cmh DEFAULT TABLESPACE SYSTEM QUOTA UNLIMITED ON SYSTEM;
+
+-- 만들어진 계정 connection 만들기
+--> 이후 해당 sql 파일 연결 계정 'exam_이니셜'로 변경하기
+
+-- 학과 정보 테이블 생성
+CREATE TABLE MAJOR (
+		MAJOR_NO NUMBER PRIMARY KEY,
+		MAJOR_NM VARCHAR2(100) NOT NULL
+);
+
+
+-- 학생 정보 테이블 생성
+CREATE TABLE STUDENT (
+    STUDENT_ID NUMBER PRIMARY KEY,
+    STUDENT_NAME VARCHAR(20) NOT NULL,
+    GENDER VARCHAR2(3) CHECK(GENDER IN ('남', '여')),
+    BIRTH DATE,
+    MAJOR_NO NUMBER REFERENCES MAJOR ON DELETE SET NULL
+);
+
+
+INSERT INTO MAJOR VALUES(100, '경제학과');
+INSERT INTO MAJOR VALUES(200, '경영학과');
+INSERT INTO MAJOR VALUES(300, '사회복지학과');
+INSERT INTO MAJOR VALUES(400, '영어영문학과');
+INSERT INTO MAJOR VALUES(500, '수학과');
+INSERT INTO MAJOR VALUES(600, '서양학과');
+INSERT INTO MAJOR VALUES(700, '체육학과');
+INSERT INTO MAJOR VALUES(800, '유아교육학과');
+INSERT INTO MAJOR VALUES(900, '중어중문학과');
+INSERT INTO MAJOR VALUES(1000, '컴퓨터공학과');
+
+
+INSERT INTO STUDENT VALUES(1, '홍길동', '남', 
+TO_DATE('20000101', 'YYYY-MM-DD'), 100);
+
+INSERT INTO STUDENT VALUES(2, '이장우', '남', 
+TO_DATE('19860601', 'YYYY-MM-DD'), 100);
+
+INSERT INTO STUDENT VALUES(3, '박나래', '여', 
+TO_DATE('19851025', 'YYYY-MM-DD'), 800);
+
+INSERT INTO STUDENT VALUES(4, '김기범', '남', 
+TO_DATE('19910923', 'YYYY-MM-DD'), 400);
+
+INSERT INTO STUDENT VALUES(5, '전현무', '남', 
+TO_DATE('19771107', 'YYYY-MM-DD'), 400);
+
+
+-- 홍길동을 김광규로, 생년월일 바꾸기
+UPDATE STUDENT SET
+STUDENT_NAME = '김광규',
+BIRTH = TO_DATE('19671208')
+WHERE STUDENT_NAME = '홍길동';
+
+
+ALTER TABLE MAJOR RENAME COLUMN MAJOR_NM TO MAJOR_NAME;
+
+-- 김기범 학과 컴퓨터공학과로 바꾸기
+UPDATE STUDENT SET
+MAJOR_NO = (SELECT MAJOR_NO 
+						FROM MAJOR 
+						WHERE MAJOR_NAME = '컴퓨터공학과')
+WHERE STUDENT_NAME = '김기범';
+
+
+
+SELECT * FROM STUDENT;
+
+
+
+-- 모든 학생 이름, 전공학과명 조회
+SELECT STUDENT_NAME, MAJOR_NAME
+FROM STUDENT
+NATURAL JOIN MAJOR;
+
+
+
+
+
+
+
+
+
